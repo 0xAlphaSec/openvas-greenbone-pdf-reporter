@@ -15,6 +15,7 @@ import xml.etree.ElementTree as ET  # Librería estándar de Python para XML
 import re # Limpia HTML dentro del texto
 import sys
 import argparse
+import os
 from datetime import datetime
 
 # Reportlab: genera el PDF
@@ -341,7 +342,7 @@ def generar_pdf(meta, vulns, ruta_salida, min_severity):
     hosts_str = ", ".join(sorted(meta["hosts"])) or "N/A"
 
     resumen_data = [
-        ["Input file", meta["archivo"]],
+        ["Input file", os.path.basename(meta["archivo"])],
         ["Generation date", fecha_gen],
         ["Scan date", meta["fecha_escaneo"] or "Not available"],
         ["Minimum severity applied", f">= {min_severity}"],
@@ -582,6 +583,11 @@ def main():
     if args.output is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
         args.output = f"reporte_openvas_{timestamp}.pdf"
+    else:
+        # Si -o es un directorio existente, poner el PDF dentro con nombre automático
+        if os.path.isdir(args.output):
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+            args.output = os.path.join(args.output, f"reporte_openvas_{timestamp}.pdf")
 
     print(f"[INFO] Procesando: {args.xml}")
     print(f"[INFO] Severidad mínima: {args.min_severity}")
